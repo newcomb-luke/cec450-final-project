@@ -1,0 +1,3 @@
+[submodule "vxworks"]
+	path = vxworks
+	url = https://github.com/newcomb-luke/vxworks-emulation-layer
