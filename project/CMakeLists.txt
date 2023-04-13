@@ -4,6 +4,6 @@ project(project)
 
 include_directories(include ../vxworks/include)
 
-add_executable(project src/main.c src/vector.c)
+add_executable(project src/main.c)
 
 target_link_libraries(project vxworks)
