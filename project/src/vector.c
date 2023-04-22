@@ -1,7 +1,5 @@
-#include <pthread.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include "vector.h"
 #include "string.h"
 #include "array.h"
