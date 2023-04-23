@@ -24,6 +24,7 @@ WDOG_ID wd;
 struct timespec main_subtractTimespecs(struct timespec before, struct timespec after);
 
 int main() {
+    // Necessary for the emulator to start counting ticks
     tickGet();
 
     struct timespec startTime;

@@ -35,9 +35,9 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
     - [ ] ControllerInputs
     - [ ] TemperatureControllerState
     - [ ] WaterFlowControllerState
-- [ ] Visualizer Subsystem
+- [x] Visualizer Subsystem
     - [x] DisplayManager
-    - [ ] Visualizer
+    - [x] Visualizer
     - [x] VisualizerMessage
     - [x] LogMessage
     - [x] VisualizerMessageData
