@@ -89,7 +89,7 @@ typedef struct {
  * Represents the time that a log message was sent in ticks and seconds
  */
 typedef struct {
-    unsigned long long ticks;
+    unsigned long ticks;
     struct timespec seconds;
 } LogMessageTimestamp;
 

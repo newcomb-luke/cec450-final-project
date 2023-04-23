@@ -21,7 +21,7 @@ LogMessage LogMessage_Valve(LogMessageValveID id,
                             LogMessageValveAction action,
                             LogMessageTimestamp timestamp) {
     LogMessage msg = {
-        .logMsgType = LOG_MESSAGE_WATER_SENSOR,
+        .logMsgType = LOG_MESSAGE_VALVE,
         .logMsgData = {
             .valveMsg = {
                 .valve = id,
@@ -37,7 +37,7 @@ LogMessage LogMessage_Valve(LogMessageValveID id,
 LogMessage LogMessage_Heater(LogMessageHeaterAction action,
                              LogMessageTimestamp timestamp) {
     LogMessage msg = {
-        .logMsgType = LOG_MESSAGE_WATER_SENSOR,
+        .logMsgType = LOG_MESSAGE_HEATER,
         .logMsgData = {
             .heaterMsg = {
                 .action = action

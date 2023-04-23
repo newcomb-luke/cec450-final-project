@@ -1,3 +1,7 @@
+#include "Effectors.h"
+#include "LogMessage.h"
+#include "SensorValues.h"
+#include "VisualizerMessaage.h"
 #include "vector.h"
 #include "array.h"
 #include "Visualizer.h"
@@ -7,6 +11,7 @@
 #include <semLib.h>
 #include <stdlib.h>
 #include <msgQLib.h>
+#include <time.h>
 #include <wdLib.h>
 #include <sigLib.h>
 #include <tickLib.h>
@@ -16,45 +21,14 @@ void repeatMe(int a);
 
 WDOG_ID wd;
 
+struct timespec main_subtractTimespecs(struct timespec before, struct timespec after);
+
 int main() {
+    tickGet();
 
-     vector vec;
- 
-     vector_init(&vec, sizeof(int));
- 
-     for (int i = 0; i < 4; i++) {
-         vector_push(&vec, &i);
-     }
- 
-     int n = 7;
-     vector_push(&vec, &n);
- 
-     for (int i = 0; i < 5; i++) {
-         int* vPtr = (int*)vector_get(&vec, i);
- 
-         if (vPtr == NULL) {
-             printf("Invalid index requested\n");
-             break;
-         }
- 
-         printf("%d\n", *vPtr);
-     }
+    struct timespec startTime;
 
-    printf("testing array:\n");
-    array my_array = vector_to_array(&vec);
-    printf("array size = %lu\n", array_size(&my_array));
-    
-    for (int i = 0; i < 5; i++) {
-         int* vPtr = (int*)array_get(&my_array, i);
- 
-         if (vPtr == NULL) {
-             printf("Invalid index requested\n");
-             break;
-         }
- 
-         printf("%d\n", *vPtr);
-     }
-
+    clock_gettime(CLOCK_REALTIME, &startTime);
 
     Visualizer* visualizer = malloc(sizeof(Visualizer));
 
@@ -62,9 +36,104 @@ int main() {
 
     Visualizer_start(visualizer);
 
-    for (;;) {
-        
-    }
+    taskDelay(520);
+
+    LogMessageTimestamp timestamp;
+
+    struct timespec now;
+
+    clock_gettime(CLOCK_REALTIME, &now);
+    timestamp.seconds = main_subtractTimespecs(startTime, now);
+    timestamp.ticks = tickGet();
+
+    LogMessage logMsg = LogMessage_WaterSensor(WATER_SENSOR_2_ID, ACTION_WATER_SENSOR_ROSE_PAST, timestamp);
+    VisualizerMessage msg = VisualizerMessage_Log(logMsg);
+    Visualizer_sendMessage(visualizer, &msg);
+
+    taskDelay(541);
+
+    clock_gettime(CLOCK_REALTIME, &now);
+    timestamp.seconds = main_subtractTimespecs(startTime, now);
+    timestamp.ticks = tickGet();
+
+    LogMessage logMsg2 = LogMessage_Heater(ACTION_HEATER_ON, timestamp);
+    VisualizerMessage msg2 = VisualizerMessage_Log(logMsg2);
+    Visualizer_sendMessage(visualizer, &msg2);
+
+    taskDelay(2);
+
+    clock_gettime(CLOCK_REALTIME, &now);
+    timestamp.seconds = main_subtractTimespecs(startTime, now);
+    timestamp.ticks = tickGet();
+
+    LogMessage logMsg3 = LogMessage_Heater(ACTION_HEATER_OFF, timestamp);
+    VisualizerMessage msg3 = VisualizerMessage_Log(logMsg3);
+    Visualizer_sendMessage(visualizer, &msg3);
+
+    taskDelay(40);
+
+    clock_gettime(CLOCK_REALTIME, &now);
+    timestamp.seconds = main_subtractTimespecs(startTime, now);
+    timestamp.ticks = tickGet();
+
+    LogMessage logMsg4 = LogMessage_WaterSensor(WATER_SENSOR_3_ID, ACTION_WATER_SENSOR_DROPPED_PAST, timestamp);
+    VisualizerMessage msg4 = VisualizerMessage_Log(logMsg4);
+    Visualizer_sendMessage(visualizer, &msg4);
+
+    taskDelay(40);
+
+    clock_gettime(CLOCK_REALTIME, &now);
+    timestamp.seconds = main_subtractTimespecs(startTime, now);
+    timestamp.ticks = tickGet();
+
+    LogMessage logMsg5 = LogMessage_Valve(OUTLET_VALVE_ID, ACTION_VALVE_OPEN, timestamp);
+    VisualizerMessage msg5 = VisualizerMessage_Log(logMsg5);
+    Visualizer_sendMessage(visualizer, &msg5);
+
+    taskDelay(40);
+
+    clock_gettime(CLOCK_REALTIME, &now);
+    timestamp.seconds = main_subtractTimespecs(startTime, now);
+    timestamp.ticks = tickGet();
+
+    LogMessage logMsg6 = LogMessage_Valve(INLET_VALVE_2_ID, ACTION_VALVE_CLOSE, timestamp);
+    VisualizerMessage msg6 = VisualizerMessage_Log(logMsg6);
+    Visualizer_sendMessage(visualizer, &msg6);
+
+    vector inletValveStatesVec;
+    vector_init(&inletValveStatesVec, sizeof(ValveState));
+
+    ValveState state = VALVE_OPEN;
+    vector_push(&inletValveStatesVec, &state);
+    state = VALVE_CLOSED;
+    vector_push(&inletValveStatesVec, &state);
+
+    array inletValveStatesArray = vector_to_array(&inletValveStatesVec);
+
+    ValveStates valveStates = {
+        .inletValveStates = inletValveStatesArray,
+        .outletValveState = VALVE_CLOSED
+    };
+    EffectorsStates effectorStates = {
+        .heaterState = HEATER_ON,
+        .valveStates = valveStates
+    };
+
+    SensorReadings sensorReadings = {
+        .temperature = 34.25,
+        .pressure = 101.45,
+        .waterLevelState = WATER_LEVEL_HIGH
+    };
+
+    UpdateMessage updateMsg = {
+        .effectorsStates = effectorStates,
+        .sensorReadings = sensorReadings
+    };
+
+    VisualizerMessage updateVisMsg = VisualizerMessage_Update(updateMsg);
+    Visualizer_sendMessage(visualizer, &updateVisMsg);
+
+    for (;;) {}
 
     /*
 
@@ -134,6 +203,21 @@ int main() {
     */
 
     return 0;
+}
+
+struct timespec main_subtractTimespecs(struct timespec before, struct timespec after) {
+    struct timespec result;
+
+    result.tv_sec = after.tv_sec - before.tv_sec;
+    result.tv_nsec = after.tv_nsec - before.tv_nsec;
+
+    if (result.tv_nsec < 0) {
+        result.tv_sec--;
+
+        result.tv_nsec = 1000000000 - result.tv_nsec;
+    }
+
+    return result;
 }
 
 int runMe(size_t argA, size_t argSemBin, size_t argMsgQ) {
