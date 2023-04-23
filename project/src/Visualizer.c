@@ -2,10 +2,14 @@
 #include "DisplayManager.h"
 #include "Effectors.h"
 #include "SensorValues.h"
+#include "VisualizerMessaage.h"
+#include <msgQLib.h>
 #include <stdio.h>
 #include <taskLib.h>
 
 #define VISUALIZER_MAX_MESSAGES 200
+
+#define VISUALIZER_TASK_PRIORITY 100
 
 void _Visualizer_loop(Visualizer* this);
 
@@ -18,11 +22,19 @@ void Visualizer_init(Visualizer* this) {
 }
 
 void Visualizer_start(Visualizer* this) {
-    this->_visualizerTask = taskSpawn("visualizerTask", 100, 0, 0x2000, (FUNCPTR) _Visualizer_loop, (size_t) this, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    this->_visualizerTask = taskSpawn("visualizerTask", 
+                                      VISUALIZER_TASK_PRIORITY, 
+                                      0, 
+                                      0x2000, 
+                                      (FUNCPTR) _Visualizer_loop, 
+                                      (size_t) this, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 void Visualizer_sendMessage(Visualizer* this, const VisualizerMessage* msg) {
-    
+    msgQSend(this->_updateQueue, 
+             (void*) msg, 
+             sizeof(VisualizerMessage),
+             NO_WAIT, MSG_PRI_NORMAL);
 }
 
 void _Visualizer_loop(Visualizer* this) {
