@@ -1,6 +1,7 @@
-#include "sysLib.h"
 #include "vector.h"
 #include "array.h"
+#include "Visualizer.h"
+#include <sysLib.h>
 #include <stdio.h>
 #include <taskLib.h>
 #include <semLib.h>
@@ -54,6 +55,18 @@ int main() {
          printf("%d\n", *vPtr);
      }
 
+
+    Visualizer* visualizer = malloc(sizeof(Visualizer));
+
+    Visualizer_init(visualizer);
+
+    Visualizer_start(visualizer);
+
+    for (;;) {
+        
+    }
+
+    /*
 
     SEM_ID semBin = semBCreate(0, SEM_EMPTY);
 
@@ -117,6 +130,8 @@ int main() {
 
         taskDelay(40);
     }
+
+    */
 
     return 0;
 }
