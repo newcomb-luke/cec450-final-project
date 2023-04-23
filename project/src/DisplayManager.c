@@ -14,6 +14,8 @@
 #define LOG_MESSAGE_WIDTH 38
 #define LOG_MESSAGE_LINES 36
 
+#define FLOAT_DISPLAY_WIDTH 7
+
 /****************************** Helper Functions *******************************/
 
 /**
@@ -68,7 +70,7 @@ void DisplayManager_init(DisplayManager* this) {
                            "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |\n"
                            "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |\n"
                            "    |============================|      |                                      |\n"
-                           "    |         Heater:            |      |                                      |\n"
+                           "    |         Heater: OFF        |      |                                      |\n"
                            "    ==============================      |                                      |\n"
                            "               |      |                 |                                      |\n"
                            "               |>====<|                 |                                      |\n"
@@ -238,6 +240,11 @@ void DisplayManager_logMessage(DisplayManager* this, const char* msg) {
 }
 
 void DisplayManager_draw(const DisplayManager* this) {
+    int i;
+    for (i = 0; i < 11; i++) {
+        printf("\n");
+    }
+
     printf("%s", this->_displayBuffer);
 }
 
@@ -247,12 +254,11 @@ void _displayFloat(char* dest, float value) {
     // The design of this supports up to 4 digits before the decimal point
     // and 2 digits after the decimal point.
 
-    const int numChars = 7;
-    char strBuffer[numChars + 1];
+    char strBuffer[FLOAT_DISPLAY_WIDTH + 1];
 
     // * means "get the width from the next format specifier", so we use
     // numChars as the total length of the string in the format
-    snprintf(strBuffer, numChars + 1, "%*.2f", numChars, value);
+    snprintf(strBuffer, FLOAT_DISPLAY_WIDTH + 1, "%*.2f", FLOAT_DISPLAY_WIDTH, value);
 
-    memcpy(dest, strBuffer, numChars);
+    memcpy(dest, strBuffer, FLOAT_DISPLAY_WIDTH);
 }

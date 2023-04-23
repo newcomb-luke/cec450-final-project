@@ -1,2 +1,60 @@
 # cec450-final-project
 The code for our final project in CEC 450 - Real-Time Embedded Systems
+
+# Project Roadmap
+- [ ] Sensor Subsystem
+    - [ ] WaterLevelReader
+    - [ ] SensorReader
+    - [ ] WaitFreeReadData
+    - [ ] WaterLevelSensor
+    - [ ] Sensor
+    - [ ] SensorsUpdater
+    - [ ] SensorsMonitor
+    - [ ] SensorReadings
+    - [ ] ReadersPackage
+    - [ ] SensorUpdates
+    - [ ] SensorsPackage
+    - [x] WaterLevelState
+- [ ] Effectors Subsystem
+    - [ ] Heater
+    - [ ] Valve
+    - [ ] EffectorsUpdater
+    - [ ] EffectorsMonitor
+    - [ ] EffectorsStates
+    - [ ] EffectorsPackage
+    - [ ] ValveStates
+    - [x] HeaterState
+    - [x] ValveState
+- [ ] Simulation Subsystem
+    - [ ] PressureSim
+    - [ ] Simulator
+- [ ] Controller Subsystem
+    - [ ] TemperatureController
+    - [ ] WaterFlowController
+    - [ ] Controller
+    - [ ] ControllerInputs
+    - [ ] TemperatureControllerState
+    - [ ] WaterFlowControllerState
+- [ ] Visualizer Subsystem
+    - [x] DisplayManager
+    - [ ] Visualizer
+    - [ ] VisualizerMessage
+    - [ ] LogMessage
+    - [ ] VisualizerMessageData
+    - [ ] VisualizerMessageType
+    - [ ] UpdateMessage
+    - [ ] LogMessageType
+    - [ ] LogMessageWaterSensorAction
+    - [ ] LogMessageHeaterAction
+    - [ ] LogMessageValveAction
+    - [ ] LogMessageWaterSensorID
+    - [ ] LogMessageValveID
+    - [ ] LogMessageTimestamp
+    - [ ] WaterSensorLogMessage
+    - [ ] HeaterLogMessage
+    - [ ] ValveLogMessage
+    - [ ] LogMessageData
+- [ ] Miscellaneous Classes
+    - [ ] vector
+    - [ ] array
+
