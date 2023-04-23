@@ -2,6 +2,7 @@
 #include "DisplayManager.h"
 #include "Effectors.h"
 #include "SensorValues.h"
+#include <stdio.h>
 #include <taskLib.h>
 
 #define VISUALIZER_MAX_MESSAGES 200
@@ -34,12 +35,19 @@ void _Visualizer_loop(Visualizer* this) {
     WaterLevelState waterLevel = WATER_LEVEL_EMPTY;
     float temp = 123.0;
     float pressure = 0.0;
+    int iteration = 1;
 
     // Infinite loop
     for (;;) {
         taskDelay(40);
 
         DisplayManager_draw(&this->_displayManager);
+
+        char msgBuffer[20];
+
+        snprintf(msgBuffer, 19, "Hello %d", iteration);
+        DisplayManager_logMessage(&(this->_displayManager), msgBuffer);
+        iteration++;
 
         if (c == 0) {
             if (open == 1) {

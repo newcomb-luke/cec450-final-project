@@ -9,6 +9,8 @@
 typedef struct {
     // The internal buffer that all updates operate on
     char* _displayBuffer;
+    // The index of the next line to write a log message to
+    int _nextLogMessageLine;
 } DisplayManager;
 
 /**
@@ -18,14 +20,6 @@ typedef struct {
  * Returns: none.
  */
 void DisplayManager_init(DisplayManager* this);
-
-/**
- * Purpose: This method redraws the display using the current contents of the displayBuffer.
- * Pre-Condition: DisplayManager is initialized.
- * Post-Condition: The displayBuffer is written to the screen.
- * Returns: none.
- */
-void DisplayManager_draw(const DisplayManager* this);
 
 /**
  * Data: state - The new state to set the inlet valve indicator.
@@ -89,3 +83,20 @@ void DisplayManager_setTemperature(DisplayManager* this, float temperature);
  * Returns: none.
  */
 void DisplayManager_setPressure(DisplayManager* this, float pressure);
+
+/**
+ * Data: msg - The new log message string.
+ * Purpose: This method adds a new log message to the section of the display buffer.
+ * Pre-Condition: DisplayManager is initialized.
+ * Post-Condition: The internal displayBuffer is updated.
+ * Returns: none.
+ */
+void DisplayManager_logMessage(DisplayManager* this, const char* msg);
+
+/**
+ * Purpose: This method redraws the display using the current contents of the displayBuffer.
+ * Pre-Condition: DisplayManager is initialized.
+ * Post-Condition: The displayBuffer is written to the screen.
+ * Returns: none.
+ */
+void DisplayManager_draw(const DisplayManager* this);

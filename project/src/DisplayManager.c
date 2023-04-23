@@ -5,75 +5,77 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define WIDTH  (80)
+#define WIDTH  (81)
 #define HEIGHT (40)
 #define BUFFER_SIZE (WIDTH * HEIGHT)
 
 #define VALVE_WIDTH 4
 
+#define LOG_MESSAGE_WIDTH 38
+#define LOG_MESSAGE_LINES 36
+
+/****************************** Helper Functions *******************************/
+
+/**
+ * Data: dest - The destination pointer to write the float after it is formatted
+ *       value - The value to display
+ * Purpose: This is a helper function to format a float as 000.00 and write it
+ *            to a memory location
+ * Pre-Condition: none.
+ * Post-Condition: The memory address has had 7 bytes written to it.
+ * Returns: none.
+ */
+void _displayFloat(char* dest, float value);
+
+/****************************** Methods *******************************/
+
 void DisplayManager_init(DisplayManager* this) {
+    this->_nextLogMessageLine = 0;
     this->_displayBuffer = malloc(BUFFER_SIZE * sizeof(char));
 
-    const char* template = "                                        |--------------------------------------|"
-                           "    |----------------------------|      |              Log Messages            |"
-                           "    |Temperature:    23.00 deg C |      |--------------------------------------|"
-                           "    |----------------------------|      |                                      |"
-                           "                                        |                                      |"
-                           "    |----------------------------|      |                                      |"
-                           "    |Pressure:      101.32 kPa   |      |                                      |"
-                           "    |----------------------------|      |                                      |"
-                           "                                        |                                      |"
-                           "    |      |              |      |      |                                      |"
-                           "    |>====<|              |>====<|      |                                      |"
-                           "    |      |              |      |      |                                      |"
-                           "    ==============================      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |- - - - - - - - - - - - - - |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |- - - - - - - - - - - - - - |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |- - - - - - - - - - - - - - |      |                                      |"
-                           "    |                            |      |                                      |"
-                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |"
-                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |"
-                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |"
-                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |"
-                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |"
-                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |"
-                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |"
-                           "    |============================|      |                                      |"
-                           "    |         Heater: OFF        |      |                                      |"
-                           "    ==============================      |                                      |"
-                           "               |      |                 |                                      |"
-                           "               |>====<|                 |                                      |"
-                           "               |      |                 |--------------------------------------|";
+    const char* template = "                                        |--------------------------------------|\n"
+                           "    |----------------------------|      |              Log Messages            |\n"
+                           "    |Temperature:          deg C |      |--------------------------------------|\n"
+                           "    |----------------------------|      |                                      |\n"
+                           "                                        |                                      |\n"
+                           "    |----------------------------|      |                                      |\n"
+                           "    |Pressure:             kPa   |      |                                      |\n"
+                           "    |----------------------------|      |                                      |\n"
+                           "                                        |                                      |\n"
+                           "    |      |              |      |      |                                      |\n"
+                           "    |>====<|              |>====<|      |                                      |\n"
+                           "    |      |              |      |      |                                      |\n"
+                           "    ==============================      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |- - - - - - - - - - - - - - |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |- - - - - - - - - - - - - - |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |- - - - - - - - - - - - - - |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |- - - - - - - - - - - - - - |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |                            |      |                                      |\n"
+                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |\n"
+                           "    |%%%%%%%%%%%%%%%%%%%%%%%%%%%%|      |                                      |\n"
+                           "    |============================|      |                                      |\n"
+                           "    |         Heater:            |      |                                      |\n"
+                           "    ==============================      |                                      |\n"
+                           "               |      |                 |                                      |\n"
+                           "               |>====<|                 |                                      |\n"
+                           "               |      |                 |--------------------------------------|\n";
 
 
     memcpy(this->_displayBuffer, template, BUFFER_SIZE);
-}
-
-void DisplayManager_draw(const DisplayManager* this) {
-    char lineBuffer[WIDTH + 1];
-
-    int i = 0;
-    for (i = 0; i < 14; i++) {
-        printf("\n");
-    }
-
-    i = 0;
-    for (i = 0; i < HEIGHT; i++) {
-        memcpy(lineBuffer, this->_displayBuffer + WIDTH * i, WIDTH * sizeof(char));
-        lineBuffer[WIDTH] = '\0';
-
-        printf("%s\n", lineBuffer);
-    }
 }
 
 void DisplayManager_setInletValve1(DisplayManager* this, ValveState state) {
@@ -147,16 +149,19 @@ void DisplayManager_setWaterLevel(DisplayManager* this, WaterLevelState state) {
         linesToDraw = 0;
     }
 
+    // Clears the area above where we need to draw
     int i;
     for (i = 0; i < totalTankLines - waterLevel; i++) {
         memset(this->_displayBuffer + bufferStart + WIDTH * i, ' ', tankWidth);
     }
+
+    // Draws the water level
     for (i = 0; i < waterLevel; i++) {
         memset(this->_displayBuffer + (bufferStart + totalTankLines * WIDTH) - WIDTH * i, '%', tankWidth);
     }
 
+    // Draw the remaining water level sensor lines
     const char* line = "- - - - - - - - - - - - - - ";
-
 
     for (i = 0; i < linesToDraw; i++) {
         const int lineBufferStart = WIDTH * 17 + 5;
@@ -164,17 +169,6 @@ void DisplayManager_setWaterLevel(DisplayManager* this, WaterLevelState state) {
         memcpy(this->_displayBuffer + lineBufferStart + offset, line, tankWidth);
     }
 }
-
-/**
- * Data: dest - The destination pointer to write the float after it is formatted
- *       value - The value to display
- * Purpose: This is a helper function to format a float as 000.00 and write it
- *            to a memory location
- * Pre-Condition: none.
- * Post-Condition: The memory address has had 7 bytes written to it.
- * Returns: none.
- */
-void _displayFloat(char* dest, float value);
 
 void DisplayManager_setTemperature(DisplayManager* this, float temperature) {
     const int bufferStart = WIDTH * 2 + 19;
@@ -187,6 +181,67 @@ void DisplayManager_setPressure(DisplayManager* this, float pressure) {
 
     _displayFloat(this->_displayBuffer + bufferStart, pressure);
 }
+
+void DisplayManager_logMessage(DisplayManager* this, const char* msg) {
+    const int bufferStart = WIDTH * 3 + 41;
+    
+    int currentColumn = 0;
+    int i;
+    for (i = 0; i < strlen(msg); i++) {
+        // Handle newlines by skipping to the next line in the log
+        // message area
+        if (msg[i] == '\n') {
+            currentColumn = 0;
+            this->_nextLogMessageLine++;
+            continue;
+        }
+
+        // Handle scrolling when a message goes past the number of
+        // lines available
+        if (this->_nextLogMessageLine >= LOG_MESSAGE_LINES) {
+            int i;
+            // Copy each line to the line before it, discarding the first line
+            for (i = 1; i < this->_nextLogMessageLine; i++) {
+                int destLineBufferOffset = bufferStart + (i - 1) * WIDTH;
+                int srcLineBufferOffset = bufferStart + i * WIDTH;
+                char* destPtr = this->_displayBuffer + destLineBufferOffset;
+                char* srcPtr = this->_displayBuffer + srcLineBufferOffset;
+
+                memcpy(destPtr, srcPtr, LOG_MESSAGE_WIDTH);
+            }
+
+            this->_nextLogMessageLine--;
+
+            char* lastLinePtr = this->_displayBuffer + bufferStart + this->_nextLogMessageLine * WIDTH;
+
+            memset(lastLinePtr, ' ', LOG_MESSAGE_WIDTH);
+        }
+
+        // Write the next character
+        int bufferOffset = bufferStart + currentColumn + WIDTH * this->_nextLogMessageLine;
+        *(this->_displayBuffer + bufferOffset) = msg[i];
+        
+        currentColumn++;
+
+        // If we are going to go off the end of a line, go to the next one
+        if (currentColumn >= LOG_MESSAGE_WIDTH) {
+            this->_nextLogMessageLine++;
+            currentColumn = 0;
+        }
+    }
+
+    // If we ended on a newline, or we printed an empty string, then don't 
+    // go to the next line, else do so.
+    if (currentColumn != 0) {
+        this->_nextLogMessageLine++;
+    }
+}
+
+void DisplayManager_draw(const DisplayManager* this) {
+    printf("%s", this->_displayBuffer);
+}
+
+/****************************** Helper Functions *******************************/
 
 void _displayFloat(char* dest, float value) {
     // The design of this supports up to 4 digits before the decimal point
