@@ -12,3 +12,12 @@ typedef enum {
     WATER_LEVEL_LOW = 1,
     WATER_LEVEL_EMPTY = 0
 } WaterLevelState;
+
+/**
+ * Stores a collection of sensor readings produced from a SensorMonitor
+ */
+typedef struct {
+    WaterLevelState waterLevelState;
+    float pressure;
+    float temperature;
+} SensorReadings;

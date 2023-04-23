@@ -4,6 +4,12 @@ project(project)
 
 include_directories(include ../vxworks/include)
 
-add_executable(project src/main.c src/vector.c src/array.c src/Visualizer.c src/DisplayManager.c src/VisualizerMessage.c)
+add_executable(project src/main.c 
+                       src/vector.c 
+                       src/array.c 
+                       src/Visualizer.c 
+                       src/DisplayManager.c 
+                       src/VisualizerMessage.c
+                       src/LogMessage.c)
 
 target_link_libraries(project vxworks)

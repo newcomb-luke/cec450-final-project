@@ -10,7 +10,7 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
     - [ ] Sensor
     - [ ] SensorsUpdater
     - [ ] SensorsMonitor
-    - [ ] SensorReadings
+    - [x] SensorReadings
     - [ ] ReadersPackage
     - [ ] SensorUpdates
     - [ ] SensorsPackage
@@ -20,9 +20,9 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
     - [ ] Valve
     - [ ] EffectorsUpdater
     - [ ] EffectorsMonitor
-    - [ ] EffectorsStates
+    - [x] EffectorsStates
     - [ ] EffectorsPackage
-    - [ ] ValveStates
+    - [x] ValveStates
     - [x] HeaterState
     - [x] ValveState
 - [ ] Simulation Subsystem
@@ -38,23 +38,23 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
 - [ ] Visualizer Subsystem
     - [x] DisplayManager
     - [ ] Visualizer
-    - [ ] VisualizerMessage
-    - [ ] LogMessage
-    - [ ] VisualizerMessageData
-    - [ ] VisualizerMessageType
-    - [ ] UpdateMessage
-    - [ ] LogMessageType
-    - [ ] LogMessageWaterSensorAction
-    - [ ] LogMessageHeaterAction
-    - [ ] LogMessageValveAction
-    - [ ] LogMessageWaterSensorID
-    - [ ] LogMessageValveID
-    - [ ] LogMessageTimestamp
-    - [ ] WaterSensorLogMessage
-    - [ ] HeaterLogMessage
-    - [ ] ValveLogMessage
-    - [ ] LogMessageData
-- [ ] Miscellaneous Classes
-    - [ ] vector
-    - [ ] array
+    - [x] VisualizerMessage
+    - [x] LogMessage
+    - [x] VisualizerMessageData
+    - [x] VisualizerMessageType
+    - [x] UpdateMessage
+    - [x] LogMessageType
+    - [x] LogMessageWaterSensorAction
+    - [x] LogMessageHeaterAction
+    - [x] LogMessageValveAction
+    - [x] LogMessageWaterSensorID
+    - [x] LogMessageValveID
+    - [x] LogMessageTimestamp
+    - [x] WaterSensorLogMessage
+    - [x] HeaterLogMessage
+    - [x] ValveLogMessage
+    - [x] LogMessageData
+- [x] Miscellaneous Classes
+    - [x] vector
+    - [x] array
 
