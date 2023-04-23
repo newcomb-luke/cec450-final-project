@@ -71,3 +71,21 @@ void DisplayManager_setHeater(DisplayManager* this, HeaterState state);
  * Returns: none.
  */
 void DisplayManager_setWaterLevel(DisplayManager* this, WaterLevelState state);
+
+/**
+ * Data: temperature - The new temperature in degrees celsius.
+ * Purpose: This method sets the state of the temperature indicator.
+ * Pre-Condition: DisplayManager is initialized.
+ * Post-Condition: The internal displayBuffer may be updated.
+ * Returns: none.
+ */
+void DisplayManager_setTemperature(DisplayManager* this, float temperature);
+
+/**
+ * Data: pressure - The new pressure in kilopascals.
+ * Purpose: This method sets the state of the pressure indicator.
+ * Pre-Condition: DisplayManager is initialized.
+ * Post-Condition: The internal displayBuffer may be updated.
+ * Returns: none.
+ */
+void DisplayManager_setPressure(DisplayManager* this, float pressure);

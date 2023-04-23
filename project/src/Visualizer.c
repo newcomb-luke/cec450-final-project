@@ -32,6 +32,8 @@ void _Visualizer_loop(Visualizer* this) {
     int c = 10;
     int open = 0;
     WaterLevelState waterLevel = WATER_LEVEL_EMPTY;
+    float temp = 123.0;
+    float pressure = 0.0;
 
     // Infinite loop
     for (;;) {
@@ -54,6 +56,10 @@ void _Visualizer_loop(Visualizer* this) {
             open = !open;
 
             DisplayManager_setWaterLevel(&(this->_displayManager), waterLevel);
+            DisplayManager_setTemperature(&(this->_displayManager), temp);
+            DisplayManager_setPressure(&(this->_displayManager), pressure);
+            temp -= 5.0;
+            pressure += 10.05;
 
             if (waterLevel == WATER_LEVEL_EMPTY) {
                 waterLevel = WATER_LEVEL_LOW;

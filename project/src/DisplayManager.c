@@ -1,6 +1,7 @@
 #include "DisplayManager.h"
 #include "Effectors.h"
 #include "SensorValues.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -68,10 +69,10 @@ void DisplayManager_draw(const DisplayManager* this) {
 
     i = 0;
     for (i = 0; i < HEIGHT; i++) {
-        memcpy(&lineBuffer, this->_displayBuffer + WIDTH * i, WIDTH * sizeof(char));
+        memcpy(lineBuffer, this->_displayBuffer + WIDTH * i, WIDTH * sizeof(char));
         lineBuffer[WIDTH] = '\0';
 
-        printf("%s\n", &lineBuffer);
+        printf("%s\n", lineBuffer);
     }
 }
 
@@ -162,4 +163,41 @@ void DisplayManager_setWaterLevel(DisplayManager* this, WaterLevelState state) {
         const int offset = i * WIDTH * 4;
         memcpy(this->_displayBuffer + lineBufferStart + offset, line, tankWidth);
     }
+}
+
+/**
+ * Data: dest - The destination pointer to write the float after it is formatted
+ *       value - The value to display
+ * Purpose: This is a helper function to format a float as 000.00 and write it
+ *            to a memory location
+ * Pre-Condition: none.
+ * Post-Condition: The memory address has had 7 bytes written to it.
+ * Returns: none.
+ */
+void _displayFloat(char* dest, float value);
+
+void DisplayManager_setTemperature(DisplayManager* this, float temperature) {
+    const int bufferStart = WIDTH * 2 + 19;
+
+    _displayFloat(this->_displayBuffer + bufferStart, temperature);
+}
+
+void DisplayManager_setPressure(DisplayManager* this, float pressure) {
+    const int bufferStart = WIDTH * 6 + 19;
+
+    _displayFloat(this->_displayBuffer + bufferStart, pressure);
+}
+
+void _displayFloat(char* dest, float value) {
+    // The design of this supports up to 4 digits before the decimal point
+    // and 2 digits after the decimal point.
+
+    const int numChars = 7;
+    char strBuffer[numChars + 1];
+
+    // * means "get the width from the next format specifier", so we use
+    // numChars as the total length of the string in the format
+    snprintf(strBuffer, numChars + 1, "%*.2f", numChars, value);
+
+    memcpy(dest, strBuffer, numChars);
 }
