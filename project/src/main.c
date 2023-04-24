@@ -1,11 +1,17 @@
-#include "sysLib.h"
+#include "Effectors.h"
+#include "LogMessage.h"
+#include "SensorValues.h"
+#include "VisualizerMessaage.h"
 #include "vector.h"
 #include "array.h"
+#include "Visualizer.h"
+#include <sysLib.h>
 #include <stdio.h>
 #include <taskLib.h>
 #include <semLib.h>
 #include <stdlib.h>
 #include <msgQLib.h>
+#include <time.h>
 #include <wdLib.h>
 #include <sigLib.h>
 #include <tickLib.h>
@@ -15,45 +21,25 @@ void repeatMe(int a);
 
 WDOG_ID wd;
 
+struct timespec main_subtractTimespecs(struct timespec before, struct timespec after);
+
 int main() {
+    // Necessary for the emulator to start counting ticks
+    tickGet();
 
-     vector vec;
- 
-     vector_init(&vec, sizeof(int));
- 
-     for (int i = 0; i < 4; i++) {
-         vector_push(&vec, &i);
-     }
- 
-     int n = 7;
-     vector_push(&vec, &n);
- 
-     for (int i = 0; i < 5; i++) {
-         int* vPtr = (int*)vector_get(&vec, i);
- 
-         if (vPtr == NULL) {
-             printf("Invalid index requested\n");
-             break;
-         }
- 
-         printf("%d\n", *vPtr);
-     }
+    struct timespec startTime;
 
-    printf("testing array:\n");
-    array my_array = vector_to_array(&vec);
-    printf("array size = %lu\n", array_size(&my_array));
-    
-    for (int i = 0; i < 5; i++) {
-         int* vPtr = (int*)array_get(&my_array, i);
- 
-         if (vPtr == NULL) {
-             printf("Invalid index requested\n");
-             break;
-         }
- 
-         printf("%d\n", *vPtr);
-     }
+    clock_gettime(CLOCK_REALTIME, &startTime);
 
+    Visualizer* visualizer = malloc(sizeof(Visualizer));
+
+    Visualizer_init(visualizer);
+
+    Visualizer_start(visualizer);
+
+    for (;;) {}
+
+    /*
 
     SEM_ID semBin = semBCreate(0, SEM_EMPTY);
 
@@ -118,7 +104,24 @@ int main() {
         taskDelay(40);
     }
 
+    */
+
     return 0;
+}
+
+struct timespec main_subtractTimespecs(struct timespec before, struct timespec after) {
+    struct timespec result;
+
+    result.tv_sec = after.tv_sec - before.tv_sec;
+    result.tv_nsec = after.tv_nsec - before.tv_nsec;
+
+    if (result.tv_nsec < 0) {
+        result.tv_sec--;
+
+        result.tv_nsec = 1000000000 - result.tv_nsec;
+    }
+
+    return result;
 }
 
 int runMe(size_t argA, size_t argSemBin, size_t argMsgQ) {
