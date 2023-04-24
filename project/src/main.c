@@ -1,6 +1,7 @@
 #include "Effectors.h"
 #include "LogMessage.h"
 #include "SensorValues.h"
+#include "Sensors.h"
 #include "VisualizerMessaage.h"
 #include "vector.h"
 #include "array.h"
