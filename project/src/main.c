@@ -2,6 +2,7 @@
 #include "LogMessage.h"
 #include "SensorValues.h"
 #include "Sensors.h"
+#include "SensorsUpdater.h"
 #include "VisualizerMessaage.h"
 #include "vector.h"
 #include "array.h"
@@ -24,6 +25,14 @@ WDOG_ID wd;
 
 struct timespec main_subtractTimespecs(struct timespec before, struct timespec after);
 
+#define WATER_LEVEL_SENSOR_LOW_HEIGHT      (10.0)
+#define WATER_LEVEL_SENSOR_MID_LOW_HEIGHT  (20.0)
+#define WATER_LEVEL_SENSOR_MID_HIGH_HEIGHT (30.0)
+#define WATER_LEVEL_SENSOR_HIGH_HEIGHT     (40.0)
+
+#define TANK_INITIAL_TEMPERATURE           (23.5)
+#define TANK_INITIAL_PRESSURE              (101.325)
+
 int main() {
     // Necessary for the emulator to start counting ticks
     tickGet();
@@ -33,10 +42,38 @@ int main() {
     clock_gettime(CLOCK_REALTIME, &startTime);
 
     Visualizer* visualizer = malloc(sizeof(Visualizer));
-
     Visualizer_init(visualizer);
-
     Visualizer_start(visualizer);
+
+    vector waterLevelSensorsVec;
+    vector_init(&waterLevelSensorsVec, sizeof(WaterLevelSensor));
+
+    float waterLevelSensorLocations[4] = { WATER_LEVEL_SENSOR_LOW_HEIGHT, 
+                                           WATER_LEVEL_SENSOR_MID_LOW_HEIGHT, 
+                                           WATER_LEVEL_SENSOR_MID_HIGH_HEIGHT, 
+                                           WATER_LEVEL_SENSOR_HIGH_HEIGHT };
+
+    int i;
+    for (i = 0; i < 4; i++) {
+        WaterLevelSensor sensor;
+        WaterLevelSensor_init(&sensor, waterLevelSensorLocations[i]);
+        
+        vector_push(&waterLevelSensorsVec, &sensor);
+    }
+
+    array waterLevelSensors = vector_to_array(&waterLevelSensorsVec);
+
+    Sensor* temperatureSensor = malloc(sizeof(Sensor));
+    Sensor_init(temperatureSensor, TANK_INITIAL_TEMPERATURE);
+
+    Sensor* pressureSensor = malloc(sizeof(Sensor));
+    Sensor_init(pressureSensor, TANK_INITIAL_PRESSURE);
+
+    SensorsPackage sensors = {
+        .waterLevelSensors = waterLevelSensors,
+        .temperatureSensor = temperatureSensor,
+        .pressureSensor = pressureSensor 
+    };
 
     for (;;) {}
 

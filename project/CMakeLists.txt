@@ -11,6 +11,7 @@ add_executable(project src/main.c
                        src/DisplayManager.c 
                        src/VisualizerMessage.c
                        src/LogMessage.c
-                       src/Sensors.c)
+                       src/Sensors.c
+                       src/SensorsUpdater.c)
 
 target_link_libraries(project vxworks)

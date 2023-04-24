@@ -6,14 +6,14 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
     - [ ] WaterLevelReader
     - [ ] SensorReader
     - [ ] WaitFreeReadData
-    - [ ] WaterLevelSensor
-    - [ ] Sensor
-    - [ ] SensorsUpdater
+    - [x] WaterLevelSensor
+    - [x] Sensor
+    - [x] SensorsUpdater
     - [ ] SensorsMonitor
     - [x] SensorReadings
     - [ ] ReadersPackage
-    - [ ] SensorUpdates
-    - [ ] SensorsPackage
+    - [x] SensorUpdates
+    - [x] SensorsPackage
     - [x] WaterLevelState
 - [ ] Effectors Subsystem
     - [ ] Heater

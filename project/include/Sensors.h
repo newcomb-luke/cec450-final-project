@@ -8,11 +8,11 @@
  */
 typedef struct {
     // Mutex used to protect the data in this structure
-    SEM_ID dataMutex;
+    SEM_ID _dataMutex;
     // The current state of the water level sensor, if it has been reached
-    bool value;
+    bool _value;
     // The location of the sensor in the tank
-    float sensorLocation;
+    float _sensorLocation;
 } WaterLevelSensor;
 
 /**
@@ -46,9 +46,9 @@ void WaterLevelSensor_write(WaterLevelSensor* this, float waterLevel);
  */
 typedef struct {
     // Mutex used to protect the data in this structure
-    SEM_ID dataMutex;
+    SEM_ID _dataMutex;
     // The current state of the sensor
-    float value;
+    float _value;
 } Sensor;
 
 /**

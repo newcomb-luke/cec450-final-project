@@ -7,9 +7,9 @@
  * resizing
  */
 typedef struct {
-    const size_t _size;
-    const size_t _sizeOfItem;
-    void* const _start;
+    size_t _size;
+    size_t _sizeOfItem;
+    void* _start;
 } array;
 
 /**
