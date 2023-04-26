@@ -3,6 +3,7 @@
 #include "WaitFreeReadData.h"
 #include <vxworks.h>
 #include <string.h>
+#include <stdlib.h>
 
 void WaitFreeReadData_init(WaitFreeReadData* this, size_t sizeOfData) {
     this->_dataReadySem = semBCreate(SEM_Q_FIFO, SEM_EMPTY);
@@ -10,6 +11,8 @@ void WaitFreeReadData_init(WaitFreeReadData* this, size_t sizeOfData) {
     this->_dataMutex = semMCreate(SEM_Q_PRIORITY | SEM_INVERSION_SAFE);
 
     this->_sizeOfData = sizeOfData;
+
+    this->_data = malloc(this->_sizeOfData);
 }
 
 
