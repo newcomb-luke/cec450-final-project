@@ -16,8 +16,8 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
     - [ ] SensorsPackage
     - [x] WaterLevelState
 - [ ] Effectors Subsystem
-    - [ ] Heater
-    - [ ] Valve
+    - [x] Heater
+    - [x] Valve
     - [ ] EffectorsUpdater
     - [ ] EffectorsMonitor
     - [x] EffectorsStates
