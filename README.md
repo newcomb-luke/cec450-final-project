@@ -3,9 +3,9 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
 
 # Project Roadmap
 - [ ] Sensor Subsystem
-    - [ ] WaterLevelReader
-    - [ ] SensorReader
-    - [ ] WaitFreeReadData
+    - [x] WaterLevelReader
+    - [x] SensorReader
+    - [x] WaitFreeReadData
     - [x] WaterLevelSensor
     - [x] Sensor
     - [x] SensorsUpdater
