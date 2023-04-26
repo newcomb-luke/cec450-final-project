@@ -15,7 +15,6 @@ typedef struct {
 } vector;
 
 /**
- * void vector_init(size_t sizeOfItem)
  * Data: sizeOfItem - The size of the items that will be stored in bytes.
  * Purpose: This method acts like a constructor for vector.
  * Pre-Condition: vector is not initialized.
@@ -26,7 +25,6 @@ typedef struct {
 void vector_init(vector* this, size_t sizeOfItem);
 
 /**
- * size_t vector_size()
  * Purpose: This method returns the size of the vector in items.
  * Pre-Condition: vector is initialized.
  * Post-Condition: none.
@@ -35,7 +33,6 @@ void vector_init(vector* this, size_t sizeOfItem);
 size_t vector_size();
 
 /**
- * void vector_push(void* itemPtr)
  * Data: itemPtr - The pointer to the data to be copied into the vector 
  * Purpose: This method appends an item to the back of the vector and resizes if necessary.
  * Pre-Condition: vector is initialized. There are no pointers to internal data in the vector.
@@ -45,7 +42,6 @@ size_t vector_size();
 void vector_push(vector* this, void* itemPtr);
 
 /**
- * void* vector_get(size_t index)
  * Data: index - The index of the item to get
  * Purpose: This method attempts to fetch an item from the index specified.
  * Pre-Condition: vector is initialized.
@@ -58,7 +54,6 @@ void vector_push(vector* this, void* itemPtr);
 void* vector_get(vector* this, size_t index);
 
 /**
- * array vector_to_array()
  * Purpose: This method effectively converts this vector to an array.
  * Pre-Condition: vector is initialized.
  * Post-Condition: vector must never be used again.
