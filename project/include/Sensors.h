@@ -1,7 +1,7 @@
 #pragma once
 
 #include <semLib.h>
-#include <stdbool.h>
+#include <vxworks.h>
 
 /**
  * Allows exclusive access and modification to a water sensor state
