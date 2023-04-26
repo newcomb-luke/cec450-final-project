@@ -1,6 +1,6 @@
 #include "Effectors.h"
-#include "semLib.h"
-#include "vxworks.h"
+#include <semLib.h>
+#include <vxworks.h>
 
 void Valve_init(Valve* this) {
     this->_state = VALVE_CLOSED;
