@@ -1,6 +1,12 @@
 #include "Effectors.h"
+#include "EffectorsMonitor.h"
+#include "EffectorsUpdater.h"
 #include "LogMessage.h"
+#include "SensorReaders.h"
 #include "SensorValues.h"
+#include "Sensors.h"
+#include "SensorsMonitor.h"
+#include "SensorsUpdater.h"
 #include "VisualizerMessaage.h"
 #include "vector.h"
 #include "array.h"
@@ -16,12 +22,18 @@
 #include <sigLib.h>
 #include <tickLib.h>
 
-int runMe(size_t argA, size_t argSemBin, size_t argMsgQ);
-void repeatMe(int a);
+#define WATER_LEVEL_SENSOR_LOW_HEIGHT      (10.0)
+#define WATER_LEVEL_SENSOR_MID_LOW_HEIGHT  (20.0)
+#define WATER_LEVEL_SENSOR_MID_HIGH_HEIGHT (30.0)
+#define WATER_LEVEL_SENSOR_HIGH_HEIGHT     (40.0)
 
-WDOG_ID wd;
+#define TANK_INITIAL_TEMPERATURE           (23.5)
+#define TANK_INITIAL_PRESSURE              (101.325)
 
 struct timespec main_subtractTimespecs(struct timespec before, struct timespec after);
+SensorsPackage initializeSensors();
+EffectorsPackage initializeEffectors();
+ReadersPackage initializeReaders(SensorsPackage sensors);
 
 int main() {
     // Necessary for the emulator to start counting ticks
@@ -32,81 +44,109 @@ int main() {
     clock_gettime(CLOCK_REALTIME, &startTime);
 
     Visualizer* visualizer = malloc(sizeof(Visualizer));
-
     Visualizer_init(visualizer);
-
     Visualizer_start(visualizer);
 
+    SensorsPackage sensors = initializeSensors();
+    EffectorsPackage effectors = initializeEffectors();
+    ReadersPackage readers = initializeReaders(sensors);
+
+    SensorsMonitor* sensorsMonitor = malloc(sizeof(SensorsMonitor));
+    SensorsMonitor_init(sensorsMonitor, readers);
+    SensorsMonitor_start(sensorsMonitor);
+
+    // EffectorsMonitor* effectorsMonitor = malloc(sizeof(EffectorsMonitor));
+    // EffectorsMonitor_init(effectorsMonitor, effectors);
+
+    // EffectorsUpdater* effectorsUpdater = malloc(sizeof(EffectorsUpdater));
+    // EffectorsUpdater_init(effectorsUpdater, effectors);
+
+    // Infinite loop
     for (;;) {}
 
-    /*
-
-    SEM_ID semBin = semBCreate(0, SEM_EMPTY);
-
-    if (semBin == NULL) {
-        printf("Failed to create semaphore\n");
-        exit(-1);
-    }
-
-    MSG_Q_ID msgQ = msgQCreate(10, sizeof(int), MSG_Q_FIFO);
-
-    if (msgQ == NULL) {
-        printf("Failed to create message queue\n");
-        exit(-1);
-    }
-
-    TASK_ID task = taskSpawn("", 100, 0, 0x2000, (FUNCPTR) runMe,
-                                            5,
-                                            (size_t) semBin,
-                                            (size_t) msgQ,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            0);
-
-    printf("Hello from main thread\n");
-
-    taskDelay(500);
-
-    printf("Hello again from main thread\n");
-
-    taskDelay(500);
-
-    semGive(semBin);
-
-    taskDelay(500);
-
-    for (int i = 0; i < 9; i++) {
-        int b = i * 3;
-        msgQSend(msgQ, (char*) &b, sizeof(int), WAIT_FOREVER, MSG_PRI_NORMAL);
-    }
-
-    int c = 69;
-    msgQSend(msgQ, (char*) &c, sizeof(int), WAIT_FOREVER, MSG_PRI_URGENT);
-
-    printf("Num messages queued: %d\n", msgQNumMsgs(msgQ));
-
-    c = 10;
-    msgQSend(msgQ, (char*) &c, sizeof(int), WAIT_FOREVER, MSG_PRI_NORMAL);
-
-    taskDelay(500);
-
-    printf("Parent task is done!\n");
-
-    // Would not be required on VxWorks, since tasks detach
-    for (;;) {
-
-        printf("Current time in ticks: %lu\n", tickGet());
-
-        taskDelay(40);
-    }
-
-    */
-
     return 0;
+}
+
+SensorsPackage initializeSensors() {
+    vector waterLevelSensorsVec;
+    vector_init(&waterLevelSensorsVec, sizeof(WaterLevelSensor));
+
+    float waterLevelSensorLocations[4] = { WATER_LEVEL_SENSOR_LOW_HEIGHT, 
+                                           WATER_LEVEL_SENSOR_MID_LOW_HEIGHT, 
+                                           WATER_LEVEL_SENSOR_MID_HIGH_HEIGHT, 
+                                           WATER_LEVEL_SENSOR_HIGH_HEIGHT };
+
+    int i;
+    for (i = 0; i < 4; i++) {
+        WaterLevelSensor sensor;
+        WaterLevelSensor_init(&sensor, waterLevelSensorLocations[i]);
+        
+        vector_push(&waterLevelSensorsVec, &sensor);
+    }
+
+    array waterLevelSensors = vector_to_array(&waterLevelSensorsVec);
+
+    Sensor* temperatureSensor = malloc(sizeof(Sensor));
+    Sensor_init(temperatureSensor, TANK_INITIAL_TEMPERATURE);
+
+    Sensor* pressureSensor = malloc(sizeof(Sensor));
+    Sensor_init(pressureSensor, TANK_INITIAL_PRESSURE);
+
+    SensorsPackage sensors = {
+        .waterLevelSensors = waterLevelSensors,
+        .temperatureSensor = temperatureSensor,
+        .pressureSensor = pressureSensor 
+    };
+
+    return sensors;
+}
+
+EffectorsPackage initializeEffectors() {
+    vector inletValvesVec;
+    vector_init(&inletValvesVec, sizeof(Valve));
+
+    Valve inletValve1;
+    Valve_init(&inletValve1);
+    Valve inletValve2;
+    Valve_init(&inletValve2);
+
+    vector_push(&inletValvesVec, &inletValve1);
+    vector_push(&inletValvesVec, &inletValve2);
+
+    array inletValves = vector_to_array(&inletValvesVec);
+
+    Valve* outletValve = malloc(sizeof(Valve));
+    Valve_init(outletValve);
+
+    Heater* heater = malloc(sizeof(Heater));
+    Heater_init(heater);
+
+    EffectorsPackage effectors = {
+        .heater = heater,
+        .inletValves = inletValves,
+        .outletValve = outletValve
+    };
+
+    return effectors;
+}
+
+ReadersPackage initializeReaders(SensorsPackage sensors) {
+    WaterLevelReader* waterLevelReader = malloc(sizeof(WaterLevelReader));
+    WaterLevelReader_init(waterLevelReader, sensors.waterLevelSensors);
+
+    SensorReader* temperatureReader = malloc(sizeof(SensorReader));
+    SensorReader_init(temperatureReader, sensors.temperatureSensor, TANK_INITIAL_TEMPERATURE);
+
+    SensorReader* pressureReader = malloc(sizeof(SensorReader));
+    SensorReader_init(pressureReader, sensors.pressureSensor, TANK_INITIAL_PRESSURE);
+
+    ReadersPackage readers = {
+        .waterLevelReader = waterLevelReader,
+        .temperatureReader = temperatureReader,
+        .pressureReader = pressureReader
+    };
+
+    return readers;
 }
 
 struct timespec main_subtractTimespecs(struct timespec before, struct timespec after) {
@@ -122,57 +162,4 @@ struct timespec main_subtractTimespecs(struct timespec before, struct timespec a
     }
 
     return result;
-}
-
-int runMe(size_t argA, size_t argSemBin, size_t argMsgQ) {
-    int a = (int) argA;
-    SEM_ID semBin = (SEM_ID) argSemBin;
-    MSG_Q_ID msgQ = (MSG_Q_ID) argMsgQ;
-
-    printf("Waiting to print...\n");
-
-    semTake(semBin, WAIT_FOREVER);
-
-    printf("Number that I was given: %d\n", a);
-
-    for (int i = 0; i < 11; i++) {
-        int b = 0;
-
-        msgQReceive(msgQ, (char*) &b, sizeof(int), WAIT_FOREVER);
-
-        printf("Received: %d\n", b);
-    }
-
-    msgQDelete(msgQ);
-
-    wd = wdCreate();
-
-    if (wd == NULL) {
-        printf("Failed to create watchdog timer\n");
-        return -1;
-    }
-
-    int status = wdStart(wd, 200, (FUNCPTR) repeatMe, 420);
-
-    if (status != 0) {
-        printf("Failed to start watchdog timer\n");
-        return -1;
-    }
-
-    taskDelay(6000);
-
-    wdCancel(wd);
-    wdDelete(wd);
-
-    printf("task runMe is done!\n");
-
-    return 0;
-}
-
-void repeatMe(int a) {
-    wdStart(wd, 200, (FUNCPTR) repeatMe, a + 1);
-
-    printf("a: %d\n", a);
-
-    taskDelay(40);
 }

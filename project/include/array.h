@@ -3,27 +3,27 @@
 
 /**
  * Description: provides access to a contiguous block of memory and provides
- * access to multiple items of the same type inside of it. Does not support 
- * resizing
+ * access to multiple items of the same type inside of it. Does not support
+ * resizing. This is designed to only ever be created by vector_to_array_()
  */
 typedef struct {
-    const size_t _size;
-    const size_t _sizeOfItem;
-    void* const _start;
+    //The number of items in this array
+    size_t _size;
+    //The size of an item in this array in bytes
+    size_t _sizeOfItem;
+    //The pointer to the start of the allocation for the array
+    void* _start;
 } array;
 
 /**
- * size_t array_size()
  * Purpose: This method returns the size of the array in items.
  * Pre-Condition: array is initialized.
  * Post-Condition: none.
  * Returns: size_t - the number of items contained in the array.
  */
-
 size_t array_size(array* this);
 
 /**
- * void* array_get(size_t index)
  * Data: index - The index of the item to get.
  * Purpose: This method attempts to fetch an item from the index specified.
  * Pre-Condition: array is initialized.

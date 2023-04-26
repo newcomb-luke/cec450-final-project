@@ -2,26 +2,26 @@
 The code for our final project in CEC 450 - Real-Time Embedded Systems
 
 # Project Roadmap
-- [ ] Sensor Subsystem
-    - [ ] WaterLevelReader
-    - [ ] SensorReader
-    - [ ] WaitFreeReadData
-    - [ ] WaterLevelSensor
-    - [ ] Sensor
-    - [ ] SensorsUpdater
-    - [ ] SensorsMonitor
+- [x] Sensor Subsystem
+    - [x] WaterLevelReader
+    - [x] SensorReader
+    - [x] WaitFreeReadData
+    - [x] WaterLevelSensor
+    - [x] Sensor
+    - [x] SensorsUpdater
+    - [x] SensorsMonitor
     - [x] SensorReadings
-    - [ ] ReadersPackage
-    - [ ] SensorUpdates
-    - [ ] SensorsPackage
+    - [x] ReadersPackage
+    - [x] SensorUpdates
+    - [x] SensorsPackage
     - [x] WaterLevelState
-- [ ] Effectors Subsystem
-    - [ ] Heater
-    - [ ] Valve
-    - [ ] EffectorsUpdater
-    - [ ] EffectorsMonitor
+- [x] Effectors Subsystem
+    - [x] Heater
+    - [x] Valve
+    - [x] EffectorsUpdater
+    - [x] EffectorsMonitor
     - [x] EffectorsStates
-    - [ ] EffectorsPackage
+    - [x] EffectorsPackage
     - [x] ValveStates
     - [x] HeaterState
     - [x] ValveState
