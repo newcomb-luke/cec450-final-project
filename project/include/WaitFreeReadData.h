@@ -3,23 +3,17 @@
 #include <vxworks.h>
 
 /**
- * Superclasses: none 
- * Subclasses: none 
- * Collaboration Graphs: See figure 4 
- * Description: provides a wait-free interface for reading from, and a blocking interface for writing to a value stored in memory. 
- * Contracts: WFRD 1 - Exclusively access or modify data 
- * Private variables:  
- * SEM_ID dataReadySem - Binary semaphore used to signal if new data is readable 
- * SEM_ID   - Mutex used to protect the data pointed to in this structure 
- * void* data - A pointer to data that is stored in this structure 
- * size_t sizeOfData - The size in bytes of the data stored
+ *  Description: provides a wait-free interface for reading from,
+ *  and a blocking interface for writing to a value stored in memory. 
  */
-
-
 typedef struct {
+    //Binary semaphore used to signal if new data is readable
     SEM_ID _dataReadySem;
+    //Mutex used to protect the data pointed to in this structure
     SEM_ID _dataMutex;
+    //A pointer to data that is stored in this structure
     void* _data;
+    //The size in bytes of the data stored
     size_t _sizeOfData;
 
 } WaitFreeReadData;

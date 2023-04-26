@@ -2,15 +2,17 @@
 #include <stddef.h>
 #include "array.h"
 /**
- * provides access to a contiguous block of memory and 
- * provides access to multiple items of the same type inside of it. 
- * Does not support resizing. This is designed to only ever
- * be created by vector_to_array_()
- */
+ * Description: provides storage and access to multiple items of the 
+ * same type in a contiguous block of memory while resizing 
+ * if more memory is needed */
 typedef struct {
+    //The current amount of items this can hold currently
     size_t _capacity;
+    //The current amount of items currently held
     size_t _size;
+    //The size of a single of this vector’s items in bytes
     size_t _sizeOfItem;
+    //The size of a single of this vector’s items in bytes
     void* _start;
 } vector;
 
