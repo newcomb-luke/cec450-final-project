@@ -34,7 +34,7 @@ bool WaitFreeReadData_read(WaitFreeReadData *this, void *buffer) {
 void WaitFreeReadData_write(WaitFreeReadData* this, const void* newData) {
     semTake(this->_dataMutex, WAIT_FOREVER);
 
-    memcpy(this->_data, newData, NO_WAIT);
+    memcpy(this->_data, newData, this->_sizeOfData);
 
     semGive(this->_dataMutex);
 

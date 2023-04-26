@@ -15,19 +15,19 @@ void _WaterLevelReader_loop(WaterLevelReader* this);
 void _SensorReader_loop(SensorReader* this);
 
 void WaterLevelReader_init(WaterLevelReader* this, array sensors) {
-    this->levelSensors = sensors;
+    this->_levelSensors = sensors;
 
-    this->lastReading = WATER_LEVEL_EMPTY;
+    this->_lastReading = WATER_LEVEL_EMPTY;
 
-    this->readerTask = NULL;
+    this->_readerTask = NULL;
 
-    WaitFreeReadData_init(&this->inner, sizeof(WaterLevelState));
+    WaitFreeReadData_init(&this->_inner, sizeof(WaterLevelState));
 }
 
 void WaterLevelReader_start(WaterLevelReader* this) {
-    this->readerTask = taskSpawn("waterLevelReader",
+    this->_readerTask = taskSpawn("waterLevelReader",
                                  WATER_LEVEL_READER_PRIORITY, 
-                                 0, 0x1000, (FUNCPTR) _WaterLevelReader_loop,
+                                 0, 0x2000, (FUNCPTR) _WaterLevelReader_loop,
                                  (size_t) this,
                                  0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
@@ -35,25 +35,24 @@ void WaterLevelReader_start(WaterLevelReader* this) {
 WaterLevelState WaterLevelReader_read(WaterLevelReader* this) {
     WaterLevelState newReading;
 
-    if (WaitFreeReadData_read(&this->inner, &newReading)) {
-        this->lastReading = newReading;
+    if (WaitFreeReadData_read(&this->_inner, &newReading)) {
+        this->_lastReading = newReading;
     }
 
-    return this->lastReading;
+    return this->_lastReading;
 }
 
 void _WaterLevelReader_loop(WaterLevelReader* this) {
-    WaterLevelState last = this->lastReading;
+    WaterLevelState last = this->_lastReading;
 
-    const int numSensors = array_size(&(this->levelSensors));
+    const int numSensors = array_size(&(this->_levelSensors));
 
     // Infinite loop
     for (;;) {
-
         int hitCount;
 
         for (hitCount = 0; hitCount < numSensors; hitCount++) {
-            WaterLevelSensor* sensor = *((WaterLevelSensor**) array_get(&(this->levelSensors), hitCount));
+            WaterLevelSensor* sensor = array_get(&(this->_levelSensors), hitCount);
 
             // If the sensor is not reached, break
             if (!WaterLevelSensor_read(sensor)) {
@@ -83,7 +82,7 @@ void _WaterLevelReader_loop(WaterLevelReader* this) {
         }
 
         if (newWaterLevel != last) {
-            WaitFreeReadData_write(&(this->inner), &newWaterLevel);
+            WaitFreeReadData_write(&(this->_inner), &newWaterLevel);
 
             last = newWaterLevel;
         }
@@ -93,44 +92,46 @@ void _WaterLevelReader_loop(WaterLevelReader* this) {
 }
 
 void SensorReader_init(SensorReader* this, Sensor* sensor, float initialValue) {
-    this->sensor = sensor;
+    this->_sensor = sensor;
 
-    this->lastReading = initialValue;
+    this->_lastReading = initialValue;
 
-    this->readerWatchdog = NULL;
+    this->_readerWatchdog = NULL;
 
-    WaitFreeReadData_init(&this->inner, sizeof(float));
+    WaitFreeReadData_init(&this->_inner, sizeof(float));
 }
 
 void SensorReader_start(SensorReader* this) {
-    this->readerWatchdog = wdCreate();
-    wdStart(this->readerWatchdog, 
+    this->_readerWatchdog = wdCreate();
+
+    int status = wdStart(this->_readerWatchdog, 
             SENSOR_READER_ACTIVATION_DELAY, 
             (FUNCPTR) _SensorReader_loop,
-            (int) this);
+            (size_t) this);
 }
 
 float SensorReader_read(SensorReader* this) {
     float newReading;
 
-    if (WaitFreeReadData_read(&this->inner, &newReading)) {
-        this->lastReading = newReading;
+    if (WaitFreeReadData_read(&this->_inner, &newReading)) {
+        printf("Got new reading: %f\n", newReading);
+        this->_lastReading = newReading;
     }
 
-    return this->lastReading;
+    return this->_lastReading;
 }
 
 void _SensorReader_loop(SensorReader* this) {
-    wdStart(this->readerWatchdog, 
+    wdStart(this->_readerWatchdog, 
             SENSOR_READER_ACTIVATION_DELAY, 
             (FUNCPTR) _SensorReader_loop,
-            (int) this);
+            (size_t) this);
 
-    float newReading = Sensor_read(this->sensor);
+    float newReading = Sensor_read(this->_sensor);
 
-    if (newReading != this->lastReading) {
-        WaitFreeReadData_write(&(this->inner), &newReading);
+    if (newReading != this->_lastReading) {
+        WaitFreeReadData_write(&(this->_inner), &newReading);
 
-        this->lastReading = newReading;
+        this->_lastReading = newReading;
     }
 }

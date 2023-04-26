@@ -16,6 +16,8 @@ add_executable(project src/main.c
                        src/Effectors.c
                        src/EffectorsMonitor.c
                        src/EffectorsUpdater.c
-                       src/WaitFreeReadData.c)
+                       src/WaitFreeReadData.c
+                       src/SensorsMonitor.c
+                       src/SensorReaders.c)
 
 target_link_libraries(project vxworks)

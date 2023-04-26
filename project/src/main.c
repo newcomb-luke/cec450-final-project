@@ -2,8 +2,10 @@
 #include "EffectorsMonitor.h"
 #include "EffectorsUpdater.h"
 #include "LogMessage.h"
+#include "SensorReaders.h"
 #include "SensorValues.h"
 #include "Sensors.h"
+#include "SensorsMonitor.h"
 #include "SensorsUpdater.h"
 #include "VisualizerMessaage.h"
 #include "vector.h"
@@ -31,6 +33,7 @@
 struct timespec main_subtractTimespecs(struct timespec before, struct timespec after);
 SensorsPackage initializeSensors();
 EffectorsPackage initializeEffectors();
+ReadersPackage initializeReaders(SensorsPackage sensors);
 
 int main() {
     // Necessary for the emulator to start counting ticks
@@ -46,12 +49,17 @@ int main() {
 
     SensorsPackage sensors = initializeSensors();
     EffectorsPackage effectors = initializeEffectors();
+    ReadersPackage readers = initializeReaders(sensors);
 
-    EffectorsMonitor* effectorsMonitor = malloc(sizeof(EffectorsMonitor));
-    EffectorsMonitor_init(effectorsMonitor, effectors);
+    SensorsMonitor* sensorsMonitor = malloc(sizeof(SensorsMonitor));
+    SensorsMonitor_init(sensorsMonitor, readers);
+    SensorsMonitor_start(sensorsMonitor);
 
-    EffectorsUpdater* effectorsUpdater = malloc(sizeof(EffectorsUpdater));
-    EffectorsUpdater_init(effectorsUpdater, effectors);
+    // EffectorsMonitor* effectorsMonitor = malloc(sizeof(EffectorsMonitor));
+    // EffectorsMonitor_init(effectorsMonitor, effectors);
+
+    // EffectorsUpdater* effectorsUpdater = malloc(sizeof(EffectorsUpdater));
+    // EffectorsUpdater_init(effectorsUpdater, effectors);
 
     // Infinite loop
     for (;;) {}
@@ -120,6 +128,25 @@ EffectorsPackage initializeEffectors() {
     };
 
     return effectors;
+}
+
+ReadersPackage initializeReaders(SensorsPackage sensors) {
+    WaterLevelReader* waterLevelReader = malloc(sizeof(WaterLevelReader));
+    WaterLevelReader_init(waterLevelReader, sensors.waterLevelSensors);
+
+    SensorReader* temperatureReader = malloc(sizeof(SensorReader));
+    SensorReader_init(temperatureReader, sensors.temperatureSensor, TANK_INITIAL_TEMPERATURE);
+
+    SensorReader* pressureReader = malloc(sizeof(SensorReader));
+    SensorReader_init(pressureReader, sensors.pressureSensor, TANK_INITIAL_PRESSURE);
+
+    ReadersPackage readers = {
+        .waterLevelReader = waterLevelReader,
+        .temperatureReader = temperatureReader,
+        .pressureReader = pressureReader
+    };
+
+    return readers;
 }
 
 struct timespec main_subtractTimespecs(struct timespec before, struct timespec after) {

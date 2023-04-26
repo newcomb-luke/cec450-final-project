@@ -13,14 +13,14 @@
  */
 typedef struct {
     // Data structure used to store state
-    WaitFreeReadData inner;
+    WaitFreeReadData _inner;
     // Stores water level sensors to be queried
     // array<WaterLevelSensor*>
-    array levelSensors;
+    array _levelSensors;
     // Stores the last reading from this reader
-    WaterLevelState lastReading;
+    WaterLevelState _lastReading;
     // Stores the task id of the reader’s internal task
-    TASK_ID readerTask;
+    TASK_ID _readerTask;
 } WaterLevelReader;
 
 /**
@@ -57,13 +57,13 @@ WaterLevelState WaterLevelReader_read(WaterLevelReader* this);
  */
 typedef struct {
     // Data structure used to store state
-    WaitFreeReadData inner;
+    WaitFreeReadData _inner;
     // Stores sensor to be queried
-    Sensor* sensor;
+    Sensor* _sensor;
     // Stores the last reading from this reader
-    float lastReading;
+    float _lastReading;
     // Stores the watchdog id of the reader’s internal watchdog
-    WDOG_ID readerWatchdog;
+    WDOG_ID _readerWatchdog;
 } SensorReader;
 
 /**
