@@ -18,6 +18,8 @@ add_executable(project src/main.c
                        src/EffectorsUpdater.c
                        src/WaitFreeReadData.c
                        src/SensorsMonitor.c
-                       src/SensorReaders.c)
+                       src/SensorReaders.c
+                       src/PressureSim.c
+                       src/Simulator.c)
 
 target_link_libraries(project vxworks)

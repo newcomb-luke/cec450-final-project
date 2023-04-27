@@ -114,7 +114,6 @@ float SensorReader_read(SensorReader* this) {
     float newReading;
 
     if (WaitFreeReadData_read(&this->_inner, &newReading)) {
-        printf("Got new reading: %f\n", newReading);
         this->_lastReading = newReading;
     }
 

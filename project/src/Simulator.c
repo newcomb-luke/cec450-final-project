@@ -1,163 +1,237 @@
 #include <stdio.h>
 #include <math.h>
-#include <stdbool.h>
-#include <Simulator.h>
-#include <PressureSim.h>
+#include "Effectors.h"
+#include "EffectorsMonitor.h"
+#include "Simulator.h"
+#include "PressureSim.h"
+#include "vector.h"
+#include <taskLib.h>
+#include <vxworks.h>
+#include <time.h>
 
-#define     TANK_RADIUS             (17.84124)
-#define     TANK_HEIGHT             (50) 
-#define     BASE_TANK_PRESSURE      (13)
-#define     EXPLOSION_TANK_PRESSURE (360)
-#define     WATER_BOILING_POINT     (100)
-#define     SIMULATION_LOOP_DELAY   (5)
-#define     TANK_VOLUME             (((M_PI * TANK_RADIUS * TANK_RADIUS) * TANK_HEIGHT) / 1000)
-#define     INLET_VALVE_RATE        (0.5)
-#define     OUTLET_VALVE_RATE       (0.5)
-#define     INLET_WATER_TEMP        (20.0)
+#define TANK_RADIUS                (17.84124)
+#define TANK_HEIGHT                (50.0) 
+#define TANK_VOLUME                (((M_PI * TANK_RADIUS * TANK_RADIUS) * TANK_HEIGHT) / 1000.0)
 
-// void Simulator_init(EffectorsPackage effectors, SensorsPackage sensors)
-// Data: effectors - The effectors this simulation will read as input.
-// sensors - The sensors this simulation will update as output.
-// Purpose: This method initializes a Simulator class and acts like a constructor.
-// Pre-Condition: Simulator is uninitialized.
-// Post-Condition: effectorsMonitor is initialized using effectors. sensorsUpdater is initialized using sensors. pressureSim is initialized. waterLevel is set to 0.0. taskID is NULL. Simulator is initialized. Simulator is not started.
-// Returns: none.
-void Simulator_init(Simulator* this, EffectorsPackage effectors, SensorePackage sensors){
+#define BASE_TANK_PRESSURE         (13.0)
+#define EXPLOSION_TANK_PRESSURE    (360.0)
+
+#define INLET_VALVE_RATE           (0.5)
+#define OUTLET_VALVE_RATE          (0.5)
+
+#define INLET_WATER_TEMP           (20.0)
+#define LITERS_PER_CUBIC_METER     (1000)
+#define DENSITY_OF_WATER           (1000)
+#define WATER_BOILING_POINT        (100.0)
+#define HEATER_WATTAGE             (4000.0)
+#define WATER_SPECIFIC_HEAT        (100.0)
+
+#define SIMULATOR_LOOP_DELAY       (5)
+#define SIMULATOR_TASK_PRIORITY    (100)
+
+struct timespec subtractTimespecs(struct timespec before, struct timespec after);
+float timespecToSeconds(struct timespec spec);
+float calculateMassOfWater(float waterVolume);
+
+void _Simulator_loop(Simulator* this);
+float _Simulator_calculateInletRate(Simulator* this, ValveStates states);
+float _Simulator_calculateMixedWaterTemp(Simulator* this, float tankTemperature, float inletMass);
+float _Simulator_calculateWaterHeating(Simulator* this, HeaterState state, float deltaTime);
+
+
+void Simulator_init(Simulator* this, EffectorsPackage effectors, SensorsPackage sensors){
     EffectorsMonitor_init(&this->_effectorsMonitor, effectors);
-    SensorsUpdated_init(&this->_sensorsUpdater,sensors);
-    PressureSim_init(this-> _pressureSim)
-    this->_waterLevel=0.0;
-    this->_taskID=NULL;
+
+    SensorsUpdater_init(&this->_sensorsUpdater,sensors);
+
+    PressureSim_init(&this->_pressureSim);
+
+    this->_waterLevel = 0.0;
+
+    this->_taskID = NULL;
 }
 
-// void Simulator_start()
-// Purpose: This method starts the simulator’s internal task.
-// Pre-Condition: Simulator is initialized. Simulator is not started.
-// Post-Condition: taskID is not NULL. Simulator is started.
-// Returns: none.
 void Simulator_start(Simulator* this){
-    _Simulator_loop();
-    this->_taskID=taskSpawn("simulator");
+    this->_taskID = taskSpawn("simulator", 
+                              SIMULATOR_TASK_PRIORITY, 
+                              0, 0x2000,
+                              (FUNCPTR) _Simulator_loop, (size_t) this,
+                              0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
-// void _Simulator_loop()
-// Purpose: This method is the Simulator’s main loop that is the entry point of a task.
-// Pre-Condition: Simulator is initialized. Simulator is started.
-// Post-Condition: none.
-// Returns: never.
-int _Simulator_loop(Simulator* this){
-   
-    float temperature = WATER_INLET_TEMP;
-    float waterVolume = 0;
-    float lastTimestamp = clock_gettime();
+/**
+ * Purpose: This method is the Simulator’s main loop that is the entry point of a task.
+ * Pre-Condition: Simulator is initialized. Simulator is started.
+ * Post-Condition: none.
+ * Returns: never.
+ */
+void _Simulator_loop(Simulator* this) {
+    struct timespec lastTimestamp;
+    clock_gettime(CLOCK_REALTIME, &lastTimestamp);
 
-    while (true) {
-        float currentTime = clock_gettime();
-        float deltaTime = currentTime - lastTimestamp;
-        float lastTimestamp = currentTime;
+    // Initialize our EffectorsStates variable
+    vector inletValveStatesVec;
+    vector_init(&inletValveStatesVec, sizeof(ValveState));
+    ValveState closed = VALVE_CLOSED;
+    vector_push(&inletValveStatesVec, &closed);
+    vector_push(&inletValveStatesVec, &closed);
+    EffectorsStates effectorStates;
+    effectorStates.valveStates.inletValveStates = vector_to_array(&inletValveStatesVec);
+    effectorStates.heaterState = HEATER_OFF;
+    effectorStates.valveStates.outletValveState = VALVE_CLOSED;
 
-        float inletRate = calculateInletRate();//add valve
+    float temperature = INLET_WATER_TEMP;
+
+    // Infinite loop
+    for (;;) {
+        struct timespec now;
+        clock_gettime(CLOCK_REALTIME, &now);
+
+        struct timespec deltaTimeTimespec = subtractTimespecs(lastTimestamp, now);
+        float deltaTime = timespecToSeconds(deltaTimeTimespec);
+        lastTimestamp = now;
+
+        EffectorsMonitor_read(&this->_effectorsMonitor, &effectorStates);
+
+        float inletRate = _Simulator_calculateInletRate(this, effectorStates.valveStates);
         float inletWater = inletRate * deltaTime;
 
         float inletMass = calculateMassOfWater(inletWater);
+        temperature = _Simulator_calculateMixedWaterTemp(this, temperature, inletMass);
 
-        float waterTemp = _Simulutor_calculateMixedWaterTemp(this, temperature, inletMass);
+        this->_waterLevel += inletWater;
+        this->_waterLevel = float_max(float_min(this->_waterLevel, TANK_VOLUME), 0.0);
 
-        waterVolume = waterVolume + inletWater;
-        waterVolume = max(min(waterVolume, TANK_VOLUME), 0);
+        float tempDelta = _Simulator_calculateWaterHeating(this, effectorStates.heaterState, deltaTime);
+        temperature = float_min(temperature + tempDelta, WATER_BOILING_POINT);
         
-        float pressure = PressureSim_Update(&this->PressureSim* this)+ BASE_TANK_PRESSURE;
-        
-        
-        float tempDelta = calculateHeaterTempDelta(heaterState, deltaTime, waterMass);//fix not bool
-        waterTemp = min(waterTemp + tempDelta, WATER_BOILING_POINT);
-        
+        float pressure = PressureSim_update(&this->_pressureSim, 
+                                            effectorStates.valveStates.outletValveState,
+                                            temperature,
+                                            this->_waterLevel,
+                                            deltaTime) + BASE_TANK_PRESSURE;
+
         SensorUpdates sensorUpdates;
-        sensorUpdates.waterLevel = waterVolume;
+        sensorUpdates.waterLevel = this->_waterLevel;
         sensorUpdates.temperature = temperature;
         sensorUpdates.pressure = pressure;
-        SensorsUpdater_write(&this->sensorsUpdater,sensorUpdates);
 
-        if (tankPressure > EXPLOSION_TANK_PRESSURE){
-            sendExplodedSignal();
+        SensorsUpdater_write(&this->_sensorsUpdater, sensorUpdates);
+
+        if (pressure > EXPLOSION_TANK_PRESSURE){
+            printf("TANK EXPLODED\n");
             break;
         }
 
-        taskDelay(SIMULATION_LOOP_DELAY);  
+        taskDelay(SIMULATOR_LOOP_DELAY);  
     }
-    while (true){
 
-     }
-     return 0;
+    for (;;) {}
 }
-// float _Simulator_calculateInletRate()
-// Purpose: This method calculates the inlet rate of water into the tank using valve states.
-// Pre-Condition: Simulator is initialized. Simulator is started.
-// Post-Condition: none.
-// Returns: float - the inlet rate in Liters per second.
-double calculateInletRate(ValveStates states){
-    
 
-    double inletRate = 0;
+/**
+ * Purpose: This method calculates the inlet rate of water into the tank using valve states.
+ * Pre-Condition: Simulator is initialized. Simulator is started.
+ * Post-Condition: none.
+ * Returns: float - the inlet rate in Liters per second.
+ */
+float _Simulator_calculateInletRate(Simulator* this, ValveStates states) {
+    float inletRate = 0.0;
 
-    for(int i = 0; i<= N - 1; i++){ 
-	    if (inletValves[i].isOpen() ){
-		    inletRate = inletRate + INLET_VALVE_RATE;
+    const int numInletValves = array_size(&states.inletValveStates);
+    int i;
+    for (i = 0; i < numInletValves; i++){ 
+        ValveState* state = array_get(&states.inletValveStates, i);
+
+        if (*state == VALVE_OPEN) {
+            inletRate += INLET_VALVE_RATE;
         }
     }
 
-    if ( outletValve.isOpen() ) {
-        inletRate = inletRate - OUTLET_VALVE_RATE;
+    if (states.outletValveState == VALVE_OPEN) {
+        inletRate -= OUTLET_VALVE_RATE;
     }
+
     return inletRate;
 
 }
-// float _Simulator_calculateMixedWaterTemp(float tankTemperature, float inletMass)
-// Data: tankTemperature - The temperature of the water in the tank in degrees Celsius
-// inletMass - The mass of the current amount of water that is entering the tank.
-// Purpose: This method calculates the final temperature of mixing inlet water into the tank.
-// Pre-Condition: Simulator is initialized. Simulator is started.
-// Post-Condition: none.
-// Returns: float - the final temperature after mixing.
-float _Simulator_calculateMixedWaterTemp(Simulator* this, float tankTemperature, float inletMass){
 
-   float newTankTemp = tankTemperature;
-   float tankMass = calculateMassOfWater(this->_waterLevel)
-    if (inletMass > 0 && tankMass > 0) {
-	   double kgDegreesK = tankMass * tankTemperature + inletMass * INLET_WATER_TEMP;
-	    newTankTemp = kgDegreesK / (tankMass + inletMass);
+/**
+ * Data: tankTemperature - The temperature of the water in the tank in degrees Celsius
+ *       inletMass - The mass of the current amount of water that is entering the tank.
+ * Purpose: This method calculates the final temperature of mixing inlet water into the tank.
+ * Pre-Condition: Simulator is initialized. Simulator is started.
+ * Post-Condition: none.
+ * Returns: float - the final temperature after mixing.
+ */
+float _Simulator_calculateMixedWaterTemp(Simulator* this, float tankTemperature, float inletMass) {
+    float newTankTemp = tankTemperature;
+    float tankMass = calculateMassOfWater(this->_waterLevel);
+
+    if (inletMass > 0.0 && tankMass > 0.0) {
+        float kgDegreesK = tankMass * tankTemperature + inletMass * INLET_WATER_TEMP;
+        newTankTemp = kgDegreesK / (tankMass + inletMass);
     }
 
     return newTankTemp;
 }
-// float _Simulator_calculateWaterHeating()
-// Purpose: This method calculates the change in water temperature for this next update.
-// Pre-Condition: Simulator is initialized. Simulator is started.
-// Post-Condition: none.
-// Returns: float - the change in water temperature due to the heater.
 
-double calculateMassOfWater(double waterVolume){
+/**
+ * Data: state - The state of the heater
+ *       deltaTime - The time in seconds since the last update
+ * Purpose: This method calculates the change in water temperature for this next update.
+ * Pre-Condition: Simulator is initialized. Simulator is started.
+ * Post-Condition: none.
+ * Returns: float - the change in water temperature due to the heater.
+ */
+float _Simulator_calculateWaterHeating(Simulator* this, HeaterState state, float deltaTime) {
+    float deltaTemp = 0.0;
 
-    int LITERS_PER_CUBIC_METER = 1000;
-    int DENSITY_OF_WATER = 1000;
-
-    double volumeCubicMeters = waterVolume / LITERS_PER_CUBIC_METER;
-    double waterMass = volumeCubicMeters * DENSITY_OF_WATER;
-
-    return waterMass;
-}
-
-
-double calculateHeaterTempDelta(HeaterState heaterState, double deltaTime, double waterMass){
-
-    int HEATER_WATTAGE = 4000;
-    int WATER_SPECIFIC_HEAT=100;
-    double deltaTemp = 0;
-
-    if (heaterState == HEATER_ON) {
-        deltaTemp = (deltaTime * HEATER_WATTAGE) / (waterMass * WATER_SPECIFIC_HEAT);
+    if (state == HEATER_ON) {
+        deltaTemp = (deltaTime * HEATER_WATTAGE) / (this->_waterLevel * WATER_SPECIFIC_HEAT);
     }
 
     return deltaTemp;
 }
 
+float calculateMassOfWater(float waterVolume){
+    float volumeCubicMeters = waterVolume / LITERS_PER_CUBIC_METER;
+    float waterMass = volumeCubicMeters * DENSITY_OF_WATER;
+
+    return waterMass;
+}
+
+struct timespec subtractTimespecs(struct timespec before, struct timespec after) {
+    struct timespec result;
+
+    result.tv_sec = after.tv_sec - before.tv_sec;
+    result.tv_nsec = after.tv_nsec - before.tv_nsec;
+
+    if (result.tv_nsec < 0) {
+        result.tv_sec--;
+
+        result.tv_nsec = 1000000000 - result.tv_nsec;
+    }
+
+    return result;
+}
+
+float timespecToSeconds(struct timespec spec) {
+    return (float)(spec.tv_sec) + (float)(spec.tv_nsec / (float)(1000000000.0));
+}
+
+float float_min(float a, float b) {
+    if (a <= b) {
+        return a;
+    }
+
+    return b;
+}
+
+float float_max(float a, float b) {
+    if (a >= b) {
+        return a;
+    }
+
+    return b;
+}

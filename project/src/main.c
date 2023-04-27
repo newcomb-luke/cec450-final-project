@@ -7,6 +7,7 @@
 #include "Sensors.h"
 #include "SensorsMonitor.h"
 #include "SensorsUpdater.h"
+#include "Simulator.h"
 #include "VisualizerMessaage.h"
 #include "vector.h"
 #include "array.h"
@@ -55,11 +56,10 @@ int main() {
     SensorsMonitor_init(sensorsMonitor, readers);
     SensorsMonitor_start(sensorsMonitor);
 
-    // EffectorsMonitor* effectorsMonitor = malloc(sizeof(EffectorsMonitor));
-    // EffectorsMonitor_init(effectorsMonitor, effectors);
+    Simulator* simulator = malloc(sizeof(Simulator));
+    Simulator_init(simulator, effectors, sensors);
 
-    // EffectorsUpdater* effectorsUpdater = malloc(sizeof(EffectorsUpdater));
-    // EffectorsUpdater_init(effectorsUpdater, effectors);
+    Simulator_start(simulator);
 
     // Infinite loop
     for (;;) {}
@@ -147,19 +147,4 @@ ReadersPackage initializeReaders(SensorsPackage sensors) {
     };
 
     return readers;
-}
-
-struct timespec main_subtractTimespecs(struct timespec before, struct timespec after) {
-    struct timespec result;
-
-    result.tv_sec = after.tv_sec - before.tv_sec;
-    result.tv_nsec = after.tv_nsec - before.tv_nsec;
-
-    if (result.tv_nsec < 0) {
-        result.tv_sec--;
-
-        result.tv_nsec = 1000000000 - result.tv_nsec;
-    }
-
-    return result;
 }
