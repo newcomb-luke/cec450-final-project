@@ -13,7 +13,7 @@
 #define TANK_HEIGHT                (50.0) 
 #define TANK_VOLUME                (((M_PI * TANK_RADIUS * TANK_RADIUS) * TANK_HEIGHT) / 1000.0)
 
-#define BASE_TANK_PRESSURE         (13.0)
+#define BASE_TANK_PRESSURE         (140.0)
 #define EXPLOSION_TANK_PRESSURE    (360.0)
 
 #define INLET_VALVE_RATE           (0.5)
