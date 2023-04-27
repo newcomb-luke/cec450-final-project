@@ -25,16 +25,16 @@ The code for our final project in CEC 450 - Real-Time Embedded Systems
     - [x] ValveStates
     - [x] HeaterState
     - [x] ValveState
-- [ ] Simulation Subsystem
-    - [ ] PressureSim
-    - [ ] Simulator
-- [ ] Controller Subsystem
-    - [ ] TemperatureController
-    - [ ] WaterFlowController
-    - [ ] Controller
-    - [ ] ControllerInputs
-    - [ ] TemperatureControllerState
-    - [ ] WaterFlowControllerState
+- [x] Simulation Subsystem
+    - [x] PressureSim
+    - [x] Simulator
+- [x] Controller Subsystem
+    - [x] TemperatureController
+    - [x] WaterFlowController
+    - [x] Controller
+    - [x] ControllerInputs
+    - [x] TemperatureControllerState
+    - [x] WaterFlowControllerState
 - [x] Visualizer Subsystem
     - [x] DisplayManager
     - [x] Visualizer
