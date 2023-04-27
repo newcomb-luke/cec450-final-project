@@ -53,7 +53,6 @@ void _Visualizer_loop(Visualizer* this) {
 
     // Infinite loop
     for (;;) {
-
         VisualizerMessage currentMessage;
 
         // Wait for a new message
