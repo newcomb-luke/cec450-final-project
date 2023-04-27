@@ -29,8 +29,6 @@
 #define SIMULATOR_LOOP_DELAY       (5)
 #define SIMULATOR_TASK_PRIORITY    (100)
 
-struct timespec subtractTimespecs(struct timespec before, struct timespec after);
-float timespecToSeconds(struct timespec spec);
 float calculateMassOfWater(float waterVolume);
 
 void _Simulator_loop(Simulator* this);
@@ -91,7 +89,7 @@ void _Simulator_loop(Simulator* this) {
         float deltaTime = timespecToSeconds(deltaTimeTimespec);
         lastTimestamp = now;
 
-        EffectorsMonitor_read(&this->_effectorsMonitor, &effectorStates);
+        EffectorsMonitor_read(&(this->_effectorsMonitor), &effectorStates);
 
         float inletRate = _Simulator_calculateInletRate(this, effectorStates.valveStates);
         float inletWater = inletRate * deltaTime;
@@ -151,6 +149,7 @@ float _Simulator_calculateInletRate(Simulator* this, ValveStates states) {
     if (states.outletValveState == VALVE_OPEN) {
         inletRate -= OUTLET_VALVE_RATE;
     }
+
 
     return inletRate;
 

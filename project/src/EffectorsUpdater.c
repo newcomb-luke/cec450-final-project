@@ -27,11 +27,15 @@ void EffectorsUpdater_write(EffectorsUpdater* this, EffectorsStates newStates) {
     // Heater
     if (this->previousStates.heaterState != newStates.heaterState) {
         Heater_write(this->effectors.heater, newStates.heaterState);
+
+        this->previousStates.heaterState = newStates.heaterState;
     }
 
     // Outlet valve
     if (this->previousStates.valveStates.outletValveState != newStates.valveStates.outletValveState) {
         Valve_write(this->effectors.outletValve, newStates.valveStates.outletValveState);
+        
+        this->previousStates.valveStates.outletValveState = newStates.valveStates.outletValveState;
     }
 
     int i;
@@ -44,6 +48,8 @@ void EffectorsUpdater_write(EffectorsUpdater* this, EffectorsStates newStates) {
             Valve* valve = array_get(&this->effectors.inletValves, i);
 
             Valve_write(valve, *new);
+
+            *previous = *new;
         }
     }
 }

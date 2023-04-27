@@ -1,26 +1,18 @@
+#include "Controller.h"
 #include "Effectors.h"
 #include "EffectorsMonitor.h"
 #include "EffectorsUpdater.h"
-#include "LogMessage.h"
 #include "SensorReaders.h"
 #include "SensorValues.h"
 #include "Sensors.h"
 #include "SensorsMonitor.h"
-#include "SensorsUpdater.h"
 #include "Simulator.h"
-#include "VisualizerMessaage.h"
 #include "vector.h"
 #include "array.h"
 #include "Visualizer.h"
-#include <sysLib.h>
+
 #include <stdio.h>
-#include <taskLib.h>
-#include <semLib.h>
 #include <stdlib.h>
-#include <msgQLib.h>
-#include <time.h>
-#include <wdLib.h>
-#include <sigLib.h>
 #include <tickLib.h>
 
 #define WATER_LEVEL_SENSOR_LOW_HEIGHT      (10.0)
@@ -52,14 +44,19 @@ int main() {
     EffectorsPackage effectors = initializeEffectors();
     ReadersPackage readers = initializeReaders(sensors);
 
-    SensorsMonitor* sensorsMonitor = malloc(sizeof(SensorsMonitor));
-    SensorsMonitor_init(sensorsMonitor, readers);
-    SensorsMonitor_start(sensorsMonitor);
-
     Simulator* simulator = malloc(sizeof(Simulator));
     Simulator_init(simulator, effectors, sensors);
-
     Simulator_start(simulator);
+
+    ControllerInputs controllerInputs = {
+        .visualizer = visualizer,
+        .sensors = readers,
+        .effectors = effectors
+    };
+
+    Controller* controller = malloc(sizeof(Controller));
+    Controller_init(controller, controllerInputs);
+    Controller_start(controller);
 
     // Infinite loop
     for (;;) {}

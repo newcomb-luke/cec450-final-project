@@ -42,5 +42,8 @@ void Simulator_init(Simulator* this, EffectorsPackage effectors, SensorsPackage 
  */
 void Simulator_start(Simulator* this);
 
+struct timespec subtractTimespecs(struct timespec before, struct timespec after);
+float timespecToSeconds(struct timespec spec);
+
 float float_min(float a, float b);
 float float_max(float a, float b);
