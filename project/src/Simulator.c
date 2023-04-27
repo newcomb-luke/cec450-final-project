@@ -18,6 +18,7 @@
 
 #define INLET_VALVE_RATE           (0.5)
 #define OUTLET_VALVE_RATE          (0.5)
+#define TEMPERATURE_LOSS_RATE      (250.0)
 
 #define INLET_WATER_TEMP           (20.0)
 #define LITERS_PER_CUBIC_METER     (1000)
@@ -27,7 +28,7 @@
 #define WATER_SPECIFIC_HEAT        (100.0)
 
 #define SIMULATOR_LOOP_DELAY       (5)
-#define SIMULATOR_TASK_PRIORITY    (100)
+#define SIMULATOR_TASK_PRIORITY    (90)
 
 float calculateMassOfWater(float waterVolume);
 
@@ -49,7 +50,7 @@ void Simulator_init(Simulator* this, EffectorsPackage effectors, SensorsPackage 
     this->_taskID = NULL;
 }
 
-void Simulator_start(Simulator* this){
+void Simulator_start(Simulator* this) {
     this->_taskID = taskSpawn("simulator", 
                               SIMULATOR_TASK_PRIORITY, 
                               0, 0x2000,
@@ -101,7 +102,7 @@ void _Simulator_loop(Simulator* this) {
         this->_waterLevel = float_max(float_min(this->_waterLevel, TANK_VOLUME), 0.0);
 
         float tempDelta = _Simulator_calculateWaterHeating(this, effectorStates.heaterState, deltaTime);
-        temperature = float_min(temperature + tempDelta, WATER_BOILING_POINT);
+        temperature = float_max(float_min(temperature + tempDelta, WATER_BOILING_POINT), 0.0);
         
         float pressure = PressureSim_update(&this->_pressureSim, 
                                             effectorStates.valveStates.outletValveState,
@@ -188,6 +189,8 @@ float _Simulator_calculateWaterHeating(Simulator* this, HeaterState state, float
 
     if (state == HEATER_ON) {
         deltaTemp = (deltaTime * HEATER_WATTAGE) / (this->_waterLevel * WATER_SPECIFIC_HEAT);
+    } else {
+        deltaTemp = -((deltaTime * TEMPERATURE_LOSS_RATE) / (this->_waterLevel * WATER_SPECIFIC_HEAT));
     }
 
     return deltaTemp;
